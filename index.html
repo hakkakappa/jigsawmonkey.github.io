@@ -35,6 +35,61 @@ let pieceWidth, pieceHeight;
 let draggedPiece = null;
 let offsetX, offsetY;
 
+function createPiecePath(x, y, width, height, topTab, rightTab, bottomTab, leftTab) {
+  const tabSize = Math.min(width, height) / 4;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+
+  // Top edge
+  if (topTab !== 0) {
+    const dir = topTab;
+    ctx.lineTo(x + width / 3, y);
+    ctx.bezierCurveTo(
+      x + width / 3, y - dir * tabSize,
+      x + 2 * width / 3, y - dir * tabSize,
+      x + 2 * width / 3, y
+    );
+  }
+  ctx.lineTo(x + width, y);
+
+  // Right edge
+  if (rightTab !== 0) {
+    const dir = rightTab;
+    ctx.lineTo(x + width, y + height / 3);
+    ctx.bezierCurveTo(
+      x + width + dir * tabSize, y + height / 3,
+      x + width + dir * tabSize, y + 2 * height / 3,
+      x + width, y + 2 * height / 3
+    );
+  }
+  ctx.lineTo(x + width, y + height);
+
+  // Bottom edge
+  if (bottomTab !== 0) {
+    const dir = bottomTab;
+    ctx.lineTo(x + 2 * width / 3, y + height);
+    ctx.bezierCurveTo(
+      x + 2 * width / 3, y + height + dir * tabSize,
+      x + width / 3, y + height + dir * tabSize,
+      x + width / 3, y + height
+    );
+  }
+  ctx.lineTo(x, y + height);
+
+  // Left edge
+  if (leftTab !== 0) {
+    const dir = leftTab;
+    ctx.lineTo(x, y + 2 * height / 3);
+    ctx.bezierCurveTo(
+      x - dir * tabSize, y + 2 * height / 3,
+      x - dir * tabSize, y + height / 3,
+      x, y + height / 3
+    );
+  }
+
+  ctx.closePath();
+}
+
 img.onload = () => {
   canvas.width = img.width;
   canvas.height = img.height;
@@ -42,7 +97,7 @@ img.onload = () => {
   pieceWidth = canvas.width / cols;
   pieceHeight = canvas.height / rows;
 
-  // Create pieces
+  // Create pieces with random tabs (1 = out, -1 = in, 0 = edge)
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       pieces.push({
@@ -52,6 +107,10 @@ img.onload = () => {
         originalY: y * pieceHeight,
         row: y,
         col: x,
+        topTab: y === 0 ? 0 : -pieces[(y-1)*cols + x].bottomTab,
+        rightTab: x === cols -1 ? 0 : Math.random() > 0.5 ? 1 : -1,
+        bottomTab: y === rows -1 ? 0 : Math.random() > 0.5 ? 1 : -1,
+        leftTab: x === 0 ? 0 : 0 // will be set when next piece is created
       });
     }
   }
@@ -62,6 +121,10 @@ img.onload = () => {
 function drawPieces() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (const p of pieces) {
+    ctx.save();
+    ctx.beginPath();
+    createPiecePath(0, 0, pieceWidth, pieceHeight, p.topTab, p.rightTab, p.bottomTab, p.leftTab);
+    ctx.clip();
     ctx.drawImage(
       img,
       p.col * pieceWidth,
@@ -74,7 +137,9 @@ function drawPieces() {
       pieceHeight
     );
     ctx.strokeStyle = '#fff';
-    ctx.strokeRect(p.x, p.y, pieceWidth, pieceHeight);
+    ctx.lineWidth = 2;
+    ctx.stroke(createPiecePath(0,0,pieceWidth,pieceHeight,p.topTab,p.rightTab,p.bottomTab,p.leftTab));
+    ctx.restore();
   }
 }
 
@@ -111,7 +176,6 @@ canvas.addEventListener('mousemove', e => {
 canvas.addEventListener('mouseup', e => {
   if (!draggedPiece) return;
 
-  // Snap to grid if close
   if (
     Math.abs(draggedPiece.x - draggedPiece.originalX) < pieceWidth / 3 &&
     Math.abs(draggedPiece.y - draggedPiece.originalY) < pieceHeight / 3
