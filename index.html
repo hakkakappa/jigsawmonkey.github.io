@@ -44,8 +44,8 @@ img.src = "JIGSAW01.jpg";
    LOAD IMAGE & CREATE PIECES
 ------------------------------ */
 img.onload = () => {
-  const pieceWidth = img.width / cols;
-  const pieceHeight = img.height / rows;
+const pieceWidth = canvas.width / cols;
+const pieceHeight = canvas.height / rows;
 
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
