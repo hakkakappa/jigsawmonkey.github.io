@@ -125,15 +125,24 @@ function draw() {
 
   for (const p of pieces) {
     ctx.save();
-
-    // Move to piece position with bleed
     ctx.translate(p.x - BLEED, p.y - BLEED);
 
-    // Draw jigsaw shape at CORE size
+    // 🟣 SHADOW (drawn BEFORE clip)
+    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 6;
+
+    drawPiecePath(pieceWidth, pieceHeight, p.top, p.right, p.bottom, p.left);
+    ctx.fillStyle = '#000'; // invisible fill, shadow only
+    ctx.fill();
+
+    // ✂️ CLIP SHAPE
+    ctx.shadowColor = 'transparent';
     drawPiecePath(pieceWidth, pieceHeight, p.top, p.right, p.bottom, p.left);
     ctx.clip();
 
-    // Draw extended image to fill tabs
+    // 🖼 IMAGE (with bleed)
     ctx.drawImage(
       img,
       p.col * pieceWidth - BLEED,
@@ -146,15 +155,16 @@ function draw() {
       pieceHeight + BLEED * 2
     );
 
-    // Outline
-    ctx.strokeStyle = '#fff';
+    // ✏️ OUTLINE
     ctx.lineWidth = 2;
+    ctx.strokeStyle = '#fff';
     drawPiecePath(pieceWidth, pieceHeight, p.top, p.right, p.bottom, p.left);
     ctx.stroke();
 
     ctx.restore();
   }
 }
+
 
 
 
