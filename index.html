@@ -132,6 +132,14 @@ function draw() {
     ctx.shadowBlur = 12;
     ctx.shadowOffsetX = 4;
     ctx.shadowOffsetY = 6;
+    
+    if (!p.isPlaced) {
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 12;
+  ctx.shadowOffsetX = 4;
+  ctx.shadowOffsetY = 6;
+}
+
 
     drawPiecePath(pieceWidth, pieceHeight, p.top, p.right, p.bottom, p.left);
     ctx.fillStyle = '#000'; // invisible fill, shadow only
@@ -206,6 +214,7 @@ canvas.addEventListener('mouseup', () => {
   }
 
   draggedPiece = null;
+  p.isPlaced = true;
   draw();
 });
 </script>
