@@ -110,10 +110,10 @@ function drawTab(ctx, x1, y1, x2, y2, size, dir) {
   const nx = -dy;
   const ny = dx;
 
-  const cx1 = x1 + dx * 0.025;
-  const cy1 = y1 + dy * 0.025;
-  const cx2 = x1 + dx * 0.075;
-  const cy2 = y1 + dy * 0.075;
+  const cx1 = x1 + dx * 0.0025;
+  const cy1 = y1 + dy * 0.0025;
+  const cx2 = x1 + dx * 0.0075;
+  const cy2 = y1 + dy * 0.0075;
 
   ctx.lineTo(cx1, cy1);
 
@@ -130,7 +130,7 @@ function drawTab(ctx, x1, y1, x2, y2, size, dir) {
 }
 
 function drawJigsawPath(ctx, p) {
-  const tabSize = Math.min(p.w, p.h) * 0.025;
+  const tabSize = Math.min(p.w, p.h) * 0.0025;
 
   ctx.beginPath();
   ctx.moveTo(p.x, p.y);
