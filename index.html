@@ -26,6 +26,9 @@
 <canvas id="puzzleCanvas" width="748" height="1000"></canvas>
 
 <script>
+/* =============================
+   BASIC SETUP
+============================= */
 const canvas = document.getElementById("puzzleCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -40,14 +43,12 @@ let offsetY = 0;
 const img = new Image();
 img.src = "JIGSAW01.jpg";
 
-
-
-/* -----------------------------
-   LOAD IMAGE & CREATE PIECES
------------------------------- */
+/* =============================
+   IMAGE LOAD & PIECE CREATION
+============================= */
 img.onload = () => {
-const pieceWidth = canvas.width / cols;
-const pieceHeight = canvas.height / rows;
+  const pieceWidth = canvas.width / cols;
+  const pieceHeight = canvas.height / rows;
 
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
@@ -94,9 +95,9 @@ function randomTab() {
   return Math.random() > 0.5 ? 1 : -1;
 }
 
-/* -----------------------------
-   JIGSAW SHAPE DRAWING
------------------------------- */
+/* =============================
+   JIGSAW SHAPE FUNCTIONS
+============================= */
 function drawTab(ctx, x1, y1, x2, y2, size, dir) {
   if (dir === 0) {
     ctx.lineTo(x2, y2);
@@ -106,15 +107,11 @@ function drawTab(ctx, x1, y1, x2, y2, size, dir) {
   const dx = x2 - x1;
   const dy = y2 - y1;
 
-  const mx = x1 + dx * 0.5;
-  const my = y1 + dy * 0.5;
-
   const nx = -dy;
   const ny = dx;
 
   const cx1 = x1 + dx * 0.25;
   const cy1 = y1 + dy * 0.25;
-
   const cx2 = x1 + dx * 0.75;
   const cy2 = y1 + dy * 0.75;
 
@@ -132,33 +129,28 @@ function drawTab(ctx, x1, y1, x2, y2, size, dir) {
   ctx.lineTo(x2, y2);
 }
 
-unction drawJigsawPath(ctx, p) {
+function drawJigsawPath(ctx, p) {
   const tabSize = Math.min(p.w, p.h) * 0.18;
 
   ctx.beginPath();
   ctx.moveTo(p.x, p.y);
 
-  // TOP
   drawTab(ctx, p.x, p.y, p.x + p.w, p.y, tabSize, p.edges.top);
-
-  // RIGHT
   drawTab(ctx, p.x + p.w, p.y, p.x + p.w, p.y + p.h, tabSize, p.edges.right);
-
-  // BOTTOM
   drawTab(ctx, p.x + p.w, p.y + p.h, p.x, p.y + p.h, tabSize, p.edges.bottom);
-
-  // LEFT
   drawTab(ctx, p.x, p.y + p.h, p.x, p.y, tabSize, p.edges.left);
 
   ctx.closePath();
 }
-/* -----------------------------
+
+/* =============================
    DRAW LOOP
------------------------------- */
+============================= */
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (const p of pieces) {
+    // image clipped to jigsaw shape
     ctx.save();
     drawJigsawPath(ctx, p);
     ctx.clip();
@@ -175,17 +167,17 @@ function draw() {
     ctx.save();
     drawJigsawPath(ctx, p);
     ctx.lineWidth = 2;
-    ctx.strokeStyle = "rgba(0,0,0,0.5)";
+    ctx.strokeStyle = "rgba(0,0,0,0.6)";
     ctx.shadowColor = "black";
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 6;
     ctx.stroke();
     ctx.restore();
   }
 }
 
-/* -----------------------------
+/* =============================
    MOUSE INTERACTION
------------------------------- */
+============================= */
 canvas.addEventListener("mousedown", e => {
   const rect = canvas.getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
@@ -224,7 +216,7 @@ canvas.addEventListener("mouseup", () => {
 
   const dx = selectedPiece.x - selectedPiece.correctX;
   const dy = selectedPiece.y - selectedPiece.correctY;
-  const distance = Math.sqrt(dx * dx + dy * dy);
+  const distance = Math.hypot(dx, dy);
 
   if (distance < 25) {
     selectedPiece.x = selectedPiece.correctX;
