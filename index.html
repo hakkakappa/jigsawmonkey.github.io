@@ -43,29 +43,6 @@ function drawPiecePath(width, height, top, right, bottom, left) {
   ctx.beginPath();
   ctx.moveTo(0, 0);
   
-function isPointInPiece(px, py, p) {
-  const TAB = Math.min(pieceWidth, pieceHeight) / 4;
-  const BLEED = TAB;
-
-  ctx.save();
-  ctx.translate(p.x - BLEED, p.y - BLEED);
-
-  drawPiecePath(
-    pieceWidth,
-    pieceHeight,
-    p.top,
-    p.right,
-    p.bottom,
-    p.left
-  );
-
-  const hit = ctx.isPointInPath(px, py);
-  ctx.restore();
-
-  return hit;
-}
-
-
   // Top
   if (top !== 0) {
     ctx.lineTo(width / 3, 0);
@@ -110,6 +87,27 @@ function isPointInPiece(px, py, p) {
   }
 
   ctx.closePath();
+}
+  function isPointInPiece(px, py, p) {
+  const TAB = Math.min(pieceWidth, pieceHeight) / 4;
+  const BLEED = TAB;
+
+  ctx.save();
+  ctx.translate(p.x - BLEED, p.y - BLEED);
+
+  drawPiecePath(
+    pieceWidth,
+    pieceHeight,
+    p.top,
+    p.right,
+    p.bottom,
+    p.left
+  );
+
+  const hit = ctx.isPointInPath(px, py);
+  ctx.restore();
+
+  return hit;
 }
 
 img.onload = () => {
