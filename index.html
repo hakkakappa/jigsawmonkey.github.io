@@ -44,17 +44,41 @@ img.onload = () => {
 
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      pieces.push({
-        sx: x * pieceWidth,
-        sy: y * pieceHeight,
-        x: Math.random() * (canvas.width - pieceWidth),
-        y: Math.random() * (canvas.height - pieceHeight),
-        correctX: x * pieceWidth,
-        correctY: y * pieceHeight,
-        w: pieceWidth,
-        h: pieceHeight,
-        placed: false
-      });
+      const piece = {
+  sx: x * pieceWidth,
+  sy: y * pieceHeight,
+  x: Math.random() * (canvas.width - pieceWidth),
+  y: Math.random() * (canvas.height - pieceHeight),
+  correctX: x * pieceWidth,
+  correctY: y * pieceHeight,
+  w: pieceWidth,
+  h: pieceHeight,
+  placed: false,
+  edges: { top: 0, right: 0, bottom: 0, left: 0 }
+        // LEFT edge
+if (x === 0) {
+  piece.edges.left = 0;
+} else {
+  piece.edges.left = -pieces[pieces.length - 1].edges.right;
+}
+
+// TOP edge
+if (y === 0) {
+  piece.edges.top = 0;
+} else {
+  piece.edges.top = -pieces[(y - 1) * cols + x].edges.bottom;
+}
+
+// RIGHT edge
+piece.edges.right = (x === cols - 1) ? 0 : randomTab();
+
+// BOTTOM edge
+piece.edges.bottom = (y === rows - 1) ? 0 : randomTab();
+
+pieces.push(piece);
+
+};
+
     }
   }
 
@@ -79,19 +103,23 @@ canvas.addEventListener("mousedown", e => {
 
   for (let i = pieces.length - 1; i >= 0; i--) {
     const p = pieces[i];
-    if (
-      mouseX > p.x && mouseX < p.x + p.w &&
-      mouseY > p.y && mouseY < p.y + p.h &&
-      !p.placed
-    ) {
+    if (p.placed) continue;
+
+    ctx.save();
+    drawJigsawPath(ctx, p);
+    const hit = ctx.isPointInPath(mouseX, mouseY);
+    ctx.restore();
+
+    if (hit) {
       selectedPiece = p;
       offsetX = mouseX - p.x;
       offsetY = mouseY - p.y;
-      pieces.push(pieces.splice(i, 1)[0]); // bring to top
+      pieces.push(pieces.splice(i, 1)[0]);
       break;
     }
   }
 });
+
 
 canvas.addEventListener("mousemove", e => {
   if (!selectedPiece) return;
