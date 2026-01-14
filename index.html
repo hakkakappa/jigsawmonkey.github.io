@@ -128,8 +128,8 @@ function draw() {
 
     // Draw jigsaw path with bleed offset
     drawPiecePath(
-      pieceWidth + BLEED * 2,
-      pieceHeight + BLEED * 2,
+      pieceWidth + BLEED * 1,
+      pieceHeight + BLEED * 1,
       p.top,
       p.right,
       p.bottom,
@@ -143,20 +143,20 @@ function draw() {
       img,
       p.col * pieceWidth - BLEED,
       p.row * pieceHeight - BLEED,
-      pieceWidth + BLEED * 2,
-      pieceHeight + BLEED * 2,
+      pieceWidth + BLEED * 1,
+      pieceHeight + BLEED * 1,
       0,
       0,
-      pieceWidth + BLEED * 2,
-      pieceHeight + BLEED * 2
+      pieceWidth + BLEED * 1,
+      pieceHeight + BLEED * 1
     );
 
     // Outline
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     drawPiecePath(
-      pieceWidth + BLEED * 2,
-      pieceHeight + BLEED * 2,
+      pieceWidth + BLEED * 1,
+      pieceHeight + BLEED * 1,
       p.top,
       p.right,
       p.bottom,
