@@ -132,7 +132,26 @@ function drawTab(ctx, x1, y1, x2, y2, size, dir) {
   ctx.lineTo(x2, y2);
 }
 
+unction drawJigsawPath(ctx, p) {
+  const tabSize = Math.min(p.w, p.h) * 0.18;
 
+  ctx.beginPath();
+  ctx.moveTo(p.x, p.y);
+
+  // TOP
+  drawTab(ctx, p.x, p.y, p.x + p.w, p.y, tabSize, p.edges.top);
+
+  // RIGHT
+  drawTab(ctx, p.x + p.w, p.y, p.x + p.w, p.y + p.h, tabSize, p.edges.right);
+
+  // BOTTOM
+  drawTab(ctx, p.x + p.w, p.y + p.h, p.x, p.y + p.h, tabSize, p.edges.bottom);
+
+  // LEFT
+  drawTab(ctx, p.x, p.y + p.h, p.x, p.y, tabSize, p.edges.left);
+
+  ctx.closePath();
+}
 /* -----------------------------
    DRAW LOOP
 ------------------------------ */
