@@ -128,17 +128,13 @@ function draw() {
     ctx.translate(p.x - BLEED, p.y - BLEED);
 
     // 🟣 SHADOW (drawn BEFORE clip)
-    ctx.shadowColor = 'rgba(0,0,0,0.6)';
-    ctx.shadowBlur = 12;
-    ctx.shadowOffsetX = 4;
-    ctx.shadowOffsetY = 6;
-    
-    if (!p.isPlaced) {
+if (!p.isPlaced) {
   ctx.shadowColor = 'rgba(0,0,0,0.6)';
   ctx.shadowBlur = 12;
   ctx.shadowOffsetX = 4;
   ctx.shadowOffsetY = 6;
 }
+
 
 
     drawPiecePath(pieceWidth, pieceHeight, p.top, p.right, p.bottom, p.left);
@@ -211,12 +207,13 @@ canvas.addEventListener('mouseup', () => {
   ) {
     draggedPiece.x = draggedPiece.correctX;
     draggedPiece.y = draggedPiece.correctY;
+    draggedPiece.isPlaced = true;
   }
 
   draggedPiece = null;
-  p.isPlaced = true;
   draw();
 });
+
 </script>
 
 </body>
