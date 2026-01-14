@@ -27,63 +27,62 @@ const canvas = document.getElementById('puzzle');
 const ctx = canvas.getContext('2d');
 
 const img = new Image();
-img.src = 'https://i.imgur.com/4AiXzf8.jpg'; // sample image
+img.src = 'https://i.imgur.com/4AiXzf8.jpg';
+
 const rows = 3;
 const cols = 3;
+
 let pieces = [];
 let pieceWidth, pieceHeight;
 let draggedPiece = null;
-let offsetX, offsetY;
+let offsetX = 0, offsetY = 0;
 
-function createPiecePath(x, y, width, height, topTab, rightTab, bottomTab, leftTab) {
-  const tabSize = Math.min(width, height) / 4;
+function drawPiecePath(width, height, top, right, bottom, left) {
+  const tab = Math.min(width, height) / 4;
+
   ctx.beginPath();
-  ctx.moveTo(x, y);
+  ctx.moveTo(0, 0);
 
-  // Top edge
-  if (topTab !== 0) {
-    const dir = topTab;
-    ctx.lineTo(x + width / 3, y);
+  // Top
+  if (top !== 0) {
+    ctx.lineTo(width / 3, 0);
     ctx.bezierCurveTo(
-      x + width / 3, y - dir * tabSize,
-      x + 2 * width / 3, y - dir * tabSize,
-      x + 2 * width / 3, y
+      width / 3, -top * tab,
+      2 * width / 3, -top * tab,
+      2 * width / 3, 0
     );
   }
-  ctx.lineTo(x + width, y);
+  ctx.lineTo(width, 0);
 
-  // Right edge
-  if (rightTab !== 0) {
-    const dir = rightTab;
-    ctx.lineTo(x + width, y + height / 3);
+  // Right
+  if (right !== 0) {
+    ctx.lineTo(width, height / 3);
     ctx.bezierCurveTo(
-      x + width + dir * tabSize, y + height / 3,
-      x + width + dir * tabSize, y + 2 * height / 3,
-      x + width, y + 2 * height / 3
+      width + right * tab, height / 3,
+      width + right * tab, 2 * height / 3,
+      width, 2 * height / 3
     );
   }
-  ctx.lineTo(x + width, y + height);
+  ctx.lineTo(width, height);
 
-  // Bottom edge
-  if (bottomTab !== 0) {
-    const dir = bottomTab;
-    ctx.lineTo(x + 2 * width / 3, y + height);
+  // Bottom
+  if (bottom !== 0) {
+    ctx.lineTo(2 * width / 3, height);
     ctx.bezierCurveTo(
-      x + 2 * width / 3, y + height + dir * tabSize,
-      x + width / 3, y + height + dir * tabSize,
-      x + width / 3, y + height
+      2 * width / 3, height + bottom * tab,
+      width / 3, height + bottom * tab,
+      width / 3, height
     );
   }
-  ctx.lineTo(x, y + height);
+  ctx.lineTo(0, height);
 
-  // Left edge
-  if (leftTab !== 0) {
-    const dir = leftTab;
-    ctx.lineTo(x, y + 2 * height / 3);
+  // Left
+  if (left !== 0) {
+    ctx.lineTo(0, 2 * height / 3);
     ctx.bezierCurveTo(
-      x - dir * tabSize, y + 2 * height / 3,
-      x - dir * tabSize, y + height / 3,
-      x, y + height / 3
+      -left * tab, 2 * height / 3,
+      -left * tab, height / 3,
+      0, height / 3
     );
   }
 
@@ -97,69 +96,71 @@ img.onload = () => {
   pieceWidth = canvas.width / cols;
   pieceHeight = canvas.height / rows;
 
-  // Create pieces with random tabs (1 = out, -1 = in, 0 = edge)
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-      pieces.push({
+      const piece = {
         x: Math.random() * (canvas.width - pieceWidth),
         y: Math.random() * (canvas.height - pieceHeight),
-        originalX: x * pieceWidth,
-        originalY: y * pieceHeight,
-        row: y,
+        correctX: x * pieceWidth,
+        correctY: y * pieceHeight,
         col: x,
-        topTab: y === 0 ? 0 : -pieces[(y-1)*cols + x].bottomTab,
-        rightTab: x === cols -1 ? 0 : Math.random() > 0.5 ? 1 : -1,
-        bottomTab: y === rows -1 ? 0 : Math.random() > 0.5 ? 1 : -1,
-        leftTab: x === 0 ? 0 : 0 // will be set when next piece is created
-      });
+        row: y,
+        top: y === 0 ? 0 : -pieces[(y - 1) * cols + x].bottom,
+        left: x === 0 ? 0 : -pieces[y * cols + (x - 1)].right,
+        right: x === cols - 1 ? 0 : Math.random() > 0.5 ? 1 : -1,
+        bottom: y === rows - 1 ? 0 : Math.random() > 0.5 ? 1 : -1
+      };
+      pieces.push(piece);
     }
   }
 
-  drawPieces();
+  draw();
 };
 
-function drawPieces() {
+function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   for (const p of pieces) {
     ctx.save();
-    ctx.beginPath();
-    createPiecePath(0, 0, pieceWidth, pieceHeight, p.topTab, p.rightTab, p.bottomTab, p.leftTab);
+    ctx.translate(p.x, p.y);
+
+    drawPiecePath(pieceWidth, pieceHeight, p.top, p.right, p.bottom, p.left);
     ctx.clip();
+
     ctx.drawImage(
       img,
       p.col * pieceWidth,
       p.row * pieceHeight,
       pieceWidth,
       pieceHeight,
-      p.x,
-      p.y,
+      0,
+      0,
       pieceWidth,
       pieceHeight
     );
+
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
-    ctx.stroke(createPiecePath(0,0,pieceWidth,pieceHeight,p.topTab,p.rightTab,p.bottomTab,p.leftTab));
+    drawPiecePath(pieceWidth, pieceHeight, p.top, p.right, p.bottom, p.left);
+    ctx.stroke();
+
     ctx.restore();
   }
 }
 
+// Mouse controls
 canvas.addEventListener('mousedown', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
+  const r = canvas.getBoundingClientRect();
+  const mx = e.clientX - r.left;
+  const my = e.clientY - r.top;
 
   for (let i = pieces.length - 1; i >= 0; i--) {
     const p = pieces[i];
-    if (
-      mouseX > p.x &&
-      mouseX < p.x + pieceWidth &&
-      mouseY > p.y &&
-      mouseY < p.y + pieceHeight
-    ) {
+    if (mx > p.x && mx < p.x + pieceWidth && my > p.y && my < p.y + pieceHeight) {
       draggedPiece = p;
-      offsetX = mouseX - p.x;
-      offsetY = mouseY - p.y;
-      pieces.push(pieces.splice(i, 1)[0]); // bring to top
+      offsetX = mx - p.x;
+      offsetY = my - p.y;
+      pieces.push(pieces.splice(i, 1)[0]);
       break;
     }
   }
@@ -167,26 +168,27 @@ canvas.addEventListener('mousedown', e => {
 
 canvas.addEventListener('mousemove', e => {
   if (!draggedPiece) return;
-  const rect = canvas.getBoundingClientRect();
-  draggedPiece.x = e.clientX - rect.left - offsetX;
-  draggedPiece.y = e.clientY - rect.top - offsetY;
-  drawPieces();
+  const r = canvas.getBoundingClientRect();
+  draggedPiece.x = e.clientX - r.left - offsetX;
+  draggedPiece.y = e.clientY - r.top - offsetY;
+  draw();
 });
 
-canvas.addEventListener('mouseup', e => {
+canvas.addEventListener('mouseup', () => {
   if (!draggedPiece) return;
 
   if (
-    Math.abs(draggedPiece.x - draggedPiece.originalX) < pieceWidth / 3 &&
-    Math.abs(draggedPiece.y - draggedPiece.originalY) < pieceHeight / 3
+    Math.abs(draggedPiece.x - draggedPiece.correctX) < pieceWidth / 3 &&
+    Math.abs(draggedPiece.y - draggedPiece.correctY) < pieceHeight / 3
   ) {
-    draggedPiece.x = draggedPiece.originalX;
-    draggedPiece.y = draggedPiece.originalY;
+    draggedPiece.x = draggedPiece.correctX;
+    draggedPiece.y = draggedPiece.correctY;
   }
 
   draggedPiece = null;
-  drawPieces();
+  draw();
 });
 </script>
+
 </body>
 </html>
