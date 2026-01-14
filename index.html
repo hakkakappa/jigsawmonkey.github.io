@@ -42,6 +42,29 @@ function drawPiecePath(width, height, top, right, bottom, left) {
 
   ctx.beginPath();
   ctx.moveTo(0, 0);
+  
+function isPointInPiece(px, py, p) {
+  const TAB = Math.min(pieceWidth, pieceHeight) / 4;
+  const BLEED = TAB;
+
+  ctx.save();
+  ctx.translate(p.x - BLEED, p.y - BLEED);
+
+  drawPiecePath(
+    pieceWidth,
+    pieceHeight,
+    p.top,
+    p.right,
+    p.bottom,
+    p.left
+  );
+
+  const hit = ctx.isPointInPath(px, py);
+  ctx.restore();
+
+  return hit;
+}
+
 
   // Top
   if (top !== 0) {
@@ -180,15 +203,19 @@ canvas.addEventListener('mousedown', e => {
 
   for (let i = pieces.length - 1; i >= 0; i--) {
     const p = pieces[i];
-    if (mx > p.x && mx < p.x + pieceWidth && my > p.y && my < p.y + pieceHeight) {
+
+    if (isPointInPiece(mx, my, p)) {
       draggedPiece = p;
       offsetX = mx - p.x;
       offsetY = my - p.y;
+
+      // Bring to top
       pieces.push(pieces.splice(i, 1)[0]);
       break;
     }
   }
 });
+
 
 canvas.addEventListener('mousemove', e => {
   if (!draggedPiece) return;
