@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>HTML5 Jigsaw Puzzle</title>
-
 <style>
   body {
     margin: 0;
@@ -16,218 +15,114 @@
 
   canvas {
     background: #222;
-    border: 2px solid #444;
-    cursor: grab;
+    border: 2px solid #fff;
   }
 </style>
 </head>
 <body>
-
-<canvas id="puzzleCanvas" width="748" height="1000"></canvas>
+<canvas id="puzzle"></canvas>
 
 <script>
-/* =============================
-   BASIC SETUP
-============================= */
-const canvas = document.getElementById("puzzleCanvas");
-const ctx = canvas.getContext("2d");
-
-const rows = 3;
-const cols = 3;
-const pieces = [];
-
-let selectedPiece = null;
-let offsetX = 0;
-let offsetY = 0;
+const canvas = document.getElementById('puzzle');
+const ctx = canvas.getContext('2d');
 
 const img = new Image();
-img.src = "JIGSAW01.jpg";
+img.src = 'JIGSAW01.jpg'; // sample image
+const rows = 10;
+const cols = 10;
+let pieces = [];
+let pieceWidth, pieceHeight;
+let draggedPiece = null;
+let offsetX, offsetY;
 
-/* =============================
-   IMAGE LOAD & PIECE CREATION
-============================= */
 img.onload = () => {
-  const pieceWidth = canvas.width / cols;
-  const pieceHeight = canvas.height / rows;
+  canvas.width = img.width;
+  canvas.height = img.height;
 
+  pieceWidth = canvas.width / cols;
+  pieceHeight = canvas.height / rows;
+
+  // Create pieces
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
-
-      const piece = {
-        sx: x * pieceWidth,
-        sy: y * pieceHeight,
+      pieces.push({
         x: Math.random() * (canvas.width - pieceWidth),
         y: Math.random() * (canvas.height - pieceHeight),
-        correctX: x * pieceWidth,
-        correctY: y * pieceHeight,
-        w: pieceWidth,
-        h: pieceHeight,
-        placed: false,
-        edges: { top: 0, right: 0, bottom: 0, left: 0 }
-      };
-
-      // LEFT edge
-      if (x === 0) {
-        piece.edges.left = 0;
-      } else {
-        piece.edges.left = -pieces[pieces.length - 1].edges.right;
-      }
-
-      // TOP edge
-      if (y === 0) {
-        piece.edges.top = 0;
-      } else {
-        piece.edges.top = -pieces[(y - 1) * cols + x].edges.bottom;
-      }
-
-      // RIGHT & BOTTOM edges
-      piece.edges.right = (x === cols - 1) ? 0 : randomTab();
-      piece.edges.bottom = (y === rows - 1) ? 0 : randomTab();
-
-      pieces.push(piece);
+        originalX: x * pieceWidth,
+        originalY: y * pieceHeight,
+        row: y,
+        col: x,
+      });
     }
   }
 
-  draw();
+  drawPieces();
 };
 
-function randomTab() {
-  return Math.random() > 0.5 ? 1 : -1;
-}
-
-/* =============================
-   JIGSAW SHAPE FUNCTIONS
-============================= */
-function drawTab(ctx, x1, y1, x2, y2, size, dir) {
-  if (dir === 0) {
-    ctx.lineTo(x2, y2);
-    return;
-  }
-
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-
-  const nx = -dy;
-  const ny = dx;
-
-  const cx1 = x1 + dx * 1;
-  const cy1 = y1 + dy * 1;
-  const cx2 = x1 + dx * 1;
-  const cy2 = y1 + dy * 1;
-
-  ctx.lineTo(cx1, cy1);
-
-  ctx.bezierCurveTo(
-    cx1 + nx * size * dir,
-    cy1 + ny * size * dir,
-    cx2 + nx * size * dir,
-    cy2 + ny * size * dir,
-    cx2,
-    cy2
-  );
-
-  ctx.lineTo(x2, y2);
-}
-
-function drawJigsawPath(ctx, p) {
-  const tabSize = Math.min(p.w, p.h) * 0.01;
-
-  ctx.beginPath();
-  ctx.moveTo(p.x, p.y);
-
-  drawTab(ctx, p.x, p.y, p.x + p.w, p.y, tabSize, p.edges.top);
-  drawTab(ctx, p.x + p.w, p.y, p.x + p.w, p.y + p.h, tabSize, p.edges.right);
-  drawTab(ctx, p.x + p.w, p.y + p.h, p.x, p.y + p.h, tabSize, p.edges.bottom);
-  drawTab(ctx, p.x, p.y + p.h, p.x, p.y, tabSize, p.edges.left);
-
-  ctx.closePath();
-}
-
-/* =============================
-   DRAW LOOP
-============================= */
-function draw() {
+function drawPieces() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
   for (const p of pieces) {
-    // image clipped to jigsaw shape
-    ctx.save();
-    drawJigsawPath(ctx, p);
-    ctx.clip();
-
     ctx.drawImage(
       img,
-      p.sx, p.sy, p.w, p.h,
-      p.x, p.y, p.w, p.h
+      p.col * pieceWidth,
+      p.row * pieceHeight,
+      pieceWidth,
+      pieceHeight,
+      p.x,
+      p.y,
+      pieceWidth,
+      pieceHeight
     );
-
-    ctx.restore();
-
-    // outline + shadow
-    ctx.save();
-    drawJigsawPath(ctx, p);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = "rgba(0,0,0,0.6)";
-    ctx.shadowColor = "black";
-    ctx.shadowBlur = 6;
-    ctx.stroke();
-    ctx.restore();
+    ctx.strokeStyle = '#fff';
+    ctx.strokeRect(p.x, p.y, pieceWidth, pieceHeight);
   }
 }
 
-/* =============================
-   MOUSE INTERACTION
-============================= */
-canvas.addEventListener("mousedown", e => {
+canvas.addEventListener('mousedown', e => {
   const rect = canvas.getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
   const mouseY = e.clientY - rect.top;
 
   for (let i = pieces.length - 1; i >= 0; i--) {
     const p = pieces[i];
-    if (p.placed) continue;
-
-    ctx.save();
-    drawJigsawPath(ctx, p);
-    const hit = ctx.isPointInPath(mouseX, mouseY);
-    ctx.restore();
-
-    if (hit) {
-      selectedPiece = p;
+    if (
+      mouseX > p.x &&
+      mouseX < p.x + pieceWidth &&
+      mouseY > p.y &&
+      mouseY < p.y + pieceHeight
+    ) {
+      draggedPiece = p;
       offsetX = mouseX - p.x;
       offsetY = mouseY - p.y;
-      pieces.push(pieces.splice(i, 1)[0]);
+      pieces.push(pieces.splice(i, 1)[0]); // bring to top
       break;
     }
   }
 });
 
-canvas.addEventListener("mousemove", e => {
-  if (!selectedPiece) return;
-
+canvas.addEventListener('mousemove', e => {
+  if (!draggedPiece) return;
   const rect = canvas.getBoundingClientRect();
-  selectedPiece.x = e.clientX - rect.left - offsetX;
-  selectedPiece.y = e.clientY - rect.top - offsetY;
-  draw();
+  draggedPiece.x = e.clientX - rect.left - offsetX;
+  draggedPiece.y = e.clientY - rect.top - offsetY;
+  drawPieces();
 });
 
-canvas.addEventListener("mouseup", () => {
-  if (!selectedPiece) return;
+canvas.addEventListener('mouseup', e => {
+  if (!draggedPiece) return;
 
-  const dx = selectedPiece.x - selectedPiece.correctX;
-  const dy = selectedPiece.y - selectedPiece.correctY;
-  const distance = Math.hypot(dx, dy);
-
-  if (distance < 25) {
-    selectedPiece.x = selectedPiece.correctX;
-    selectedPiece.y = selectedPiece.correctY;
-    selectedPiece.placed = true;
+  // Snap to grid if close
+  if (
+    Math.abs(draggedPiece.x - draggedPiece.originalX) < pieceWidth / 3 &&
+    Math.abs(draggedPiece.y - draggedPiece.originalY) < pieceHeight / 3
+  ) {
+    draggedPiece.x = draggedPiece.originalX;
+    draggedPiece.y = draggedPiece.originalY;
   }
 
-  selectedPiece = null;
-  draw();
+  draggedPiece = null;
+  drawPieces();
 });
 </script>
-
 </body>
 </html>
