@@ -120,53 +120,42 @@ img.onload = () => {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  const TAB = Math.min(pieceWidth, pieceHeight) / 4;
+  const BLEED = TAB;
+
   for (const p of pieces) {
     ctx.save();
 
-    // Move to piece position INCLUDING bleed
+    // Move to piece position with bleed
     ctx.translate(p.x - BLEED, p.y - BLEED);
 
-    // Draw jigsaw path with bleed offset
-    drawPiecePath(
-      pieceWidth + BLEED * 1,
-      pieceHeight + BLEED * 1,
-      p.top,
-      p.right,
-      p.bottom,
-      p.left
-    );
-
+    // Draw jigsaw shape at CORE size
+    drawPiecePath(pieceWidth, pieceHeight, p.top, p.right, p.bottom, p.left);
     ctx.clip();
 
-    // Draw larger image slice
+    // Draw extended image to fill tabs
     ctx.drawImage(
       img,
       p.col * pieceWidth - BLEED,
       p.row * pieceHeight - BLEED,
-      pieceWidth + BLEED * 1,
-      pieceHeight + BLEED * 1,
-      0,
-      0,
-      pieceWidth + BLEED * 1,
-      pieceHeight + BLEED * 1
+      pieceWidth + BLEED * 2,
+      pieceHeight + BLEED * 2,
+      -BLEED,
+      -BLEED,
+      pieceWidth + BLEED * 2,
+      pieceHeight + BLEED * 2
     );
 
     // Outline
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
-    drawPiecePath(
-      pieceWidth + BLEED * 1,
-      pieceHeight + BLEED * 1,
-      p.top,
-      p.right,
-      p.bottom,
-      p.left
-    );
+    drawPiecePath(pieceWidth, pieceHeight, p.top, p.right, p.bottom, p.left);
     ctx.stroke();
 
     ctx.restore();
   }
 }
+
 
 
 // Mouse controls
